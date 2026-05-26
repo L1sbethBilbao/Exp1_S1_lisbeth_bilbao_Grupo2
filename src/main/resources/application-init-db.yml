@@ -1,0 +1,10 @@
+spring:
+  main:
+    web-application-type: none
+  jpa:
+    hibernate:
+      ddl-auto: none
+
+logging:
+  level:
+    com.duoc.inscripcion_cursos: INFO

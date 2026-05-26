@@ -1,0 +1,19 @@
+spring:
+  jpa:
+    show-sql: false
+
+server:
+  error:
+    include-message: always
+    include-stacktrace: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+logging:
+  level:
+    root: WARN
+    com.duoc.inscripcion_cursos: INFO

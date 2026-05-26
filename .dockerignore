@@ -1,0 +1,12 @@
+target/
+.git/
+.gitignore
+.env
+Wallet_miQuintaBD/
+Wallet_*/
+**/*.pem
+.idea/
+.vscode/
+*.md
+postman/
+scripts/

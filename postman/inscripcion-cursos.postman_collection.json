@@ -1,0 +1,451 @@
+{
+  "info": {
+    "name": "Inscripcion Cursos - Semana 1",
+    "description": "Coleccion organizada por ROL.\n\nCarpeta 01 ADMIN (auth: admin / Admin2026!)\nCarpeta 02 ESTUDIANTE (auth: estudiante / Estudiante2026!)\nCarpeta 03 Infraestructura (publico)\n\nFlujo completo:\n1. Ejecuta carpeta ADMIN en orden (01 reset -> ... -> 08 errores)\n2. Ejecuta carpeta ESTUDIANTE en orden (01 listar -> ... -> 09 errores)\n3. Verifica en SQL: scripts/consultas-verificacion-oracle.sql (mismo orden)\n\nVariables: baseUrl, adminUser, adminPassword, estudianteUser, estudiantePassword",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01 - ADMIN",
+      "description": "Todo lo que hace el rol ADMIN. Auth Basic heredada: admin / Admin2026!",
+      "auth": {
+        "type": "basic",
+        "basic": [
+          { "key": "username", "value": "{{adminUser}}", "type": "string" },
+          { "key": "password", "value": "{{adminPassword}}", "type": "string" }
+        ]
+      },
+      "item": [
+        {
+          "name": "ADMIN 01 - Reset datos prueba",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/api/admin/reset-pruebas",
+            "description": "Limpia inscripciones/cursos y deja 3 cursos (ids 1,2,3).\nEjecutar SIEMPRE antes de una demo nueva.\nSQL: bloque ADMIN 01"
+          }
+        },
+        {
+          "name": "ADMIN 02 - Listar cursos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/cursos",
+            "description": "Catalogo publico (auth admin tambien funciona).\nEsperado: 200, 3 cursos.\nSQL: bloque ADMIN 02"
+          }
+        },
+        {
+          "name": "ADMIN 03 - Crear curso Java Cloud",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201 Created', function () { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Java Cloud Native\",\n  \"instructor\": \"Prof. Silva\",\n  \"duracionHoras\": 45,\n  \"costo\": 175000\n}"
+            },
+            "url": "{{baseUrl}}/api/cursos",
+            "description": "Esperado: 201, id 4.\nSQL: bloque ADMIN 03"
+          }
+        },
+        {
+          "name": "ADMIN 04 - Crear curso Microservicios",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201 Created', function () { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Microservicios con Spring\",\n  \"instructor\": \"Prof. Torres\",\n  \"duracionHoras\": 50,\n  \"costo\": 200000\n}"
+            },
+            "url": "{{baseUrl}}/api/cursos",
+            "description": "Esperado: 201, id 5.\nSQL: bloque ADMIN 04"
+          }
+        },
+        {
+          "name": "ADMIN 05 - Listar cursos (despues de crear)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/cursos",
+            "description": "Esperado: 200, 5 cursos en total.\nSQL: bloque ADMIN 05"
+          }
+        },
+        {
+          "name": "ADMIN 06 - Crear curso nombre vacio (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400 Bad Request', function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"\",\n  \"instructor\": \"Prof. Test\",\n  \"duracionHoras\": 20,\n  \"costo\": 50000\n}"
+            },
+            "url": "{{baseUrl}}/api/cursos",
+            "description": "Validacion Bean Validation.\nSQL: bloque ADMIN 06"
+          }
+        },
+        {
+          "name": "ADMIN 07 - Crear curso costo negativo (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400 Bad Request', function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Curso Invalido\",\n  \"instructor\": \"Prof. Test\",\n  \"duracionHoras\": 20,\n  \"costo\": -100\n}"
+            },
+            "url": "{{baseUrl}}/api/cursos",
+            "description": "Costo debe ser positivo.\nSQL: bloque ADMIN 07"
+          }
+        },
+        {
+          "name": "ADMIN 08 - Crear curso duplicado (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('409 Conflict', function () { pm.response.to.have.status(409); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Spring Boot Avanzado\",\n  \"instructor\": \"Prof. Garcia\",\n  \"duracionHoras\": 40,\n  \"costo\": 150000\n}"
+            },
+            "url": "{{baseUrl}}/api/cursos",
+            "description": "Nombre ya existe.\nSQL: bloque ADMIN 08"
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 - ESTUDIANTE",
+      "description": "Todo lo que hace el rol ESTUDIANTE. Auth Basic heredada: estudiante / Estudiante2026!",
+      "auth": {
+        "type": "basic",
+        "basic": [
+          { "key": "username", "value": "{{estudianteUser}}", "type": "string" },
+          { "key": "password", "value": "{{estudiantePassword}}", "type": "string" }
+        ]
+      },
+      "item": [
+        {
+          "name": "EST 01 - Listar cursos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/cursos",
+            "description": "Ver catalogo antes de inscribirse.\nEsperado: 200.\nSQL: bloque EST 01"
+          }
+        },
+        {
+          "name": "EST 02 - Inscripcion 1 curso",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201 Created', function () { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombreEstudiante\": \"Pedro Ramirez\",\n  \"emailEstudiante\": \"pedro@duoc.cl\",\n  \"cursoIds\": [1]\n}"
+            },
+            "url": "{{baseUrl}}/api/inscripciones",
+            "description": "Pedro inscribe curso id 1.\nSQL: bloque EST 02 (2 SELECT: cabecera + detalle)"
+          }
+        },
+        {
+          "name": "EST 03 - Inscripcion varios cursos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201 Created', function () { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombreEstudiante\": \"Maria Lopez\",\n  \"emailEstudiante\": \"maria@duoc.cl\",\n  \"cursoIds\": [1, 2, 3]\n}"
+            },
+            "url": "{{baseUrl}}/api/inscripciones",
+            "description": "Maria inscribe 3 cursos, total = suma costos.\nSQL: bloque EST 03"
+          }
+        },
+        {
+          "name": "EST 04 - Inscripcion sin email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201 Created', function () { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombreEstudiante\": \"Ana Contreras\",\n  \"cursoIds\": [2]\n}"
+            },
+            "url": "{{baseUrl}}/api/inscripciones",
+            "description": "Email opcional.\nSQL: bloque EST 04"
+          }
+        },
+        {
+          "name": "EST 05 - Inscripcion sin cursos (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400 Bad Request', function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombreEstudiante\": \"Juan Perez\",\n  \"emailEstudiante\": \"juan@duoc.cl\",\n  \"cursoIds\": []\n}"
+            },
+            "url": "{{baseUrl}}/api/inscripciones",
+            "description": "cursoIds vacio.\nSQL: bloque EST 05"
+          }
+        },
+        {
+          "name": "EST 06 - Inscripcion curso inexistente (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('404 Not Found', function () { pm.response.to.have.status(404); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombreEstudiante\": \"Juan Perez\",\n  \"emailEstudiante\": \"juan@duoc.cl\",\n  \"cursoIds\": [9999]\n}"
+            },
+            "url": "{{baseUrl}}/api/inscripciones",
+            "description": "Curso 9999 no existe.\nSQL: bloque EST 06"
+          }
+        },
+        {
+          "name": "EST 07 - Inscripcion cursos duplicados (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400 Bad Request', function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombreEstudiante\": \"Juan Perez\",\n  \"emailEstudiante\": \"juan@duoc.cl\",\n  \"cursoIds\": [1, 1]\n}"
+            },
+            "url": "{{baseUrl}}/api/inscripciones",
+            "description": "IDs repetidos en la misma inscripcion.\nSQL: bloque EST 07"
+          }
+        },
+        {
+          "name": "EST 08 - Inscripcion email invalido (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400 Bad Request', function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombreEstudiante\": \"Juan Perez\",\n  \"emailEstudiante\": \"correo-invalido\",\n  \"cursoIds\": [1]\n}"
+            },
+            "url": "{{baseUrl}}/api/inscripciones",
+            "description": "Formato email invalido.\nSQL: bloque EST 08"
+          }
+        },
+        {
+          "name": "EST 09 - Inscripcion sin nombre (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400 Bad Request', function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombreEstudiante\": \"\",\n  \"cursoIds\": [1]\n}"
+            },
+            "url": "{{baseUrl}}/api/inscripciones",
+            "description": "Nombre obligatorio.\nSQL: bloque EST 09"
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 - Infraestructura",
+      "description": "Endpoints publicos (sin auth). No tienen consulta Oracle.",
+      "item": [
+        {
+          "name": "INFRA 01 - Health check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/actuator/health",
+            "description": "Esperado: 200 UP"
+          }
+        },
+        {
+          "name": "INFRA 02 - OpenAPI docs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api-docs",
+            "description": "Esperado: 200 JSON"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "adminUser", "value": "admin" },
+    { "key": "adminPassword", "value": "Admin2026!" },
+    { "key": "estudianteUser", "value": "estudiante" },
+    { "key": "estudiantePassword", "value": "Estudiante2026!" }
+  ]
+}
